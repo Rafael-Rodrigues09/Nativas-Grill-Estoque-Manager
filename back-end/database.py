@@ -66,45 +66,36 @@ def criar_banco():
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         query = select(Carnes)
-        carnes = session.scalars(query).first()
-        if carnes == None:
+        if not session.scalars(query).first():
             for carne, usado, sobra in lista_carnes:
                   nova_carne = Carnes(carne=carne, usado_kg=usado, sobra_kg=sobra)
                   session.add(nova_carne)
             session.commit()
 
-def show_data():
+def get_data():
     with SessionLocal() as session:
         query = select(Carnes)
-        result = session.scalars(query).all()
-        dict = {}
-        for carne in result:
-            dict[carne.carne] = {'usado_kg': carne.usado_kg, 'sobra_kg': carne.sobra_kg}
-        return dict
+        results = session.scalars(query).all()      
+        return {result.carne: {'usado_kg': result.usado_kg, 'sobra_kg': result.sobra_kg} for result in results }
 
 def add_usado(carne_nome, valor):
     with SessionLocal() as session:
-        carne_query = select(Carnes).where(Carnes.carne == carne_nome)
-        carne = session.scalars(carne_query).first()
-        if carne:
-            carne.usado_kg += valor
-            session.commit()
-            return {'status': 'success'}
-        else:
+        carne = session.scalars(select(Carnes).where(Carnes.carne == carne_nome)).first()
+        if not carne:
             return {'status': 'invalid'}
-    
-    
+        carne.usado_kg += valor
+        session.commit()
+        return {'status': 'success'}
+              
 def add_sobra(carne_nome, valor):
     with SessionLocal() as session:
-        carne_query = select(Carnes).where(Carnes.carne == carne_nome)
-        carne = session.scalars(carne_query).first()
-        if carne:
-            carne.sobra_kg += valor
-            session.commit()
-            return {'status': 'success'}
-        else:
-            return {'status': 'invalid'}
-        
+        carne = session.scalars(select(Carnes).where(Carnes.carne == carne_nome)).first()
+        if not carne:
+            return {'status': 'invalid'}        
+        carne.sobra_kg += valor
+        session.commit()
+        return {'status': 'success'}
+            
 def reset():
     with SessionLocal() as session:
         query_values = select(Carnes.carne, Carnes.usado_kg, Carnes.sobra_kg)

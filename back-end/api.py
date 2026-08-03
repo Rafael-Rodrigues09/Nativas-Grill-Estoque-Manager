@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import date
 from dotenv import load_dotenv
-from database import connect, Carnes, criar_banco, add_usado, add_sobra, reset, show_data
+from database import connect, Carnes, criar_banco, add_usado, add_sobra, reset, get_data
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -27,7 +27,7 @@ criar_banco()
 
 @app.get('/estoque')
 def rote_show_data(verify = Depends(api_door)):
-    return show_data()
+    return get_data()
 
 @app.post('/uso')
 def rote_uso(dados: ModeloRegistro, verify = Depends(api_door)):

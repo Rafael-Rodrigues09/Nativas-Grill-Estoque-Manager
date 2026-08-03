@@ -4,7 +4,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=nativas-db$
+      - POSTGRES_PASSWORD=${DATA_PASS}
     volumes:
       - dados_postgres:/var/lib/postgresql/data
   api:
