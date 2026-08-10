@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import date
 from dotenv import load_dotenv
-from database import connect, Carnes, criar_banco, add_usado, add_sobra, reset, get_data
+from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -19,23 +19,23 @@ def api_door(x_token: str = Header(...)):
 Base, engine, SessionLocal = connect()
 
 class ModeloRegistro(BaseModel):
-    carne_nome: str
-    valor: float
+    name: str
+    value: float
 
 app = FastAPI()
-criar_banco()
+create_data()
 
 @app.get('/estoque')
 def rote_show_data(verify = Depends(api_door)):
     return get_data()
 
 @app.post('/uso')
-def rote_uso(dados: ModeloRegistro, verify = Depends(api_door)):
-    return add_usado(carne_nome=dados.carne_nome, valor=dados.valor)
+def rote_uso(data: ModeloRegistro, verify = Depends(api_door)):
+    return add_usage(data.name, data.value)
     
 @app.post('/sobra')
-def rote_sobra(dados: ModeloRegistro, verify = Depends(api_door)):
-    return add_sobra(carne_nome=dados.carne_nome, valor=dados.valor)
+def rote_sobra(data: ModeloRegistro, verify = Depends(api_door)):
+    return add_rest(name=data.name, value=data.value)
     
 
 @app.post('/reset')

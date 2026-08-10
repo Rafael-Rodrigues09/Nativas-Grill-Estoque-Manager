@@ -14,15 +14,15 @@ def connect():
     return Base, engine, SessionLocal
 
 Base, engine, SessionLocal = connect()
-class Carnes(Base):
-    __tablename__ = 'carnes'
+class Meats(Base):
+    __tablename__ = 'meats'
     id = Column(Integer, primary_key=True)
-    carne = Column(String(40))
-    usado_kg = Column(Float)
-    sobra_kg = Column(Float)
+    name = Column(String(40))
+    usage_kg = Column(Float)
+    rest_kg = Column(Float)
 
-def criar_banco():
-    lista_carnes = [
+def create_data():
+    meats_list = [
     ("ACEM", 0.0, 0.0),
     ("ALCATRA COMPLETA", 0, 0.0),
     ("ANCHO", 0.0, 0.0),
@@ -65,49 +65,48 @@ def criar_banco():
     ]
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
-        query = select(Carnes)
+        query = select(Meats)
         if not session.scalars(query).first():
-            for carne, usado, sobra in lista_carnes:
-                  nova_carne = Carnes(carne=carne, usado_kg=usado, sobra_kg=sobra)
-                  session.add(nova_carne)
+            for meat, usage, rest in meats_list:
+                session.add(Meats(name=meat, usage_kg=usage, rest_kg=rest))
             session.commit()
 
 def get_data():
     with SessionLocal() as session:
-        query = select(Carnes)
+        query = select(Meats)
         results = session.scalars(query).all()      
-        return {result.carne: {'usado_kg': result.usado_kg, 'sobra_kg': result.sobra_kg} for result in results }
+        return {result.name: {'usage_kg': result.usage_kg, 'rest_kg': result.rest_kg} for result in results }
 
-def add_usado(carne_nome, valor):
+def add_usage(name, value):
     with SessionLocal() as session:
-        carne = session.scalars(select(Carnes).where(Carnes.carne == carne_nome)).first()
-        if not carne:
+        meat = session.scalars(select(Meats).where(Meats.name == name)).first()
+        if not meat:
             return {'status': 'invalid'}
-        carne.usado_kg += valor
+        meat.usage_kg += value
         session.commit()
         return {'status': 'success'}
               
-def add_sobra(carne_nome, valor):
+def add_rest(name, value):
     with SessionLocal() as session:
-        carne = session.scalars(select(Carnes).where(Carnes.carne == carne_nome)).first()
-        if not carne:
+        meat = session.scalars(select(Meats).where(Meats.name == name)).first()
+        if not meat:
             return {'status': 'invalid'}        
-        carne.sobra_kg += valor
+        meat.rest_kg += value
         session.commit()
         return {'status': 'success'}
             
 def reset():
     with SessionLocal() as session:
-        query_values = select(Carnes.carne, Carnes.usado_kg, Carnes.sobra_kg)
+        query_values = select(Meats.name, Meats.usage_kg, Meats.rest_kg)
         values = session.execute(query_values).all()
         with open(f'backup.txt', 'w', encoding='UTF-8') as backup:
-            for carne, usado, sobra in values:
-                if usado != 0.0 or sobra != 0.0:
-                    backup.write(f'{carne}: usado_kg {usado} --- sobra_kg {sobra}\n')
+            for meat, usage, rest in values:
+                if usage != 0.0 or rest != 0.0:
+                    backup.write(f'{meat}: usado_kg {usage} --- sobra_kg {rest}\n')
         session.execute(
-            update(Carnes).values(
-                usado_kg=0.0,
-                sobra_kg=0.0
+            update(Meats).values(
+                usage_kg=0.0,
+                rest_kg=0.0
             )
         )
         session.commit()
