@@ -35,7 +35,7 @@ if len(usage_meats) > 0:
 else:
     st.write('Nenhuma carne adicionada')
 
-meat_name = st.selectbox('Selecione a carne:', list(data.keys()))
+meat_name = st.selectbox('Selecione a carne:', list(data.keys()), key='select_meat')
 value = st.number_input('Quatidade usada(kg):', min_value= 0.0, step= 0.01, format='%.2f')
 colb1, colb2, colb3 = st.columns(3)
 
