@@ -37,14 +37,13 @@ else:
 
 meat_name = st.selectbox('Selecione a carne:', list(data.keys()), key='select_meat')
 value = st.number_input('Quatidade usada(kg):', min_value= 0.0, step= 0.01, format='%.2f')
-colb1, colb2, colb3 = st.columns(3)
+colb1, colb2, colb3, colb4 = st.columns(4)
 
 with colb1:
     if st.button('Registrar uso'):
         package = {'name': meat_name, 'value': value}
         if value > 0:
             response = requests.post(f'{API_URL}/uso', json=package, headers=api_acess)
-            time.sleep(10)
             st.rerun()
         else:
             st.error('Digite um valor maior que 0')
@@ -59,9 +58,12 @@ with colb2:
 with colb3:
     def reset():
         response = requests.post(f'{API_URL}/reset', headers=api_acess)
-        st.rerun()
         return response.content
     st.download_button(label='🚨Resetar turno e salvar', data=reset, file_name=f'Backup-{date.today()}.txt', mime='text/plain')
+with colb4:
+    if st.button('⟳ Reverter valor'):
+        response = requests.post(f'{API_URL}/reverse', headers=api_acess)
+        st.rerun()
 
 
 

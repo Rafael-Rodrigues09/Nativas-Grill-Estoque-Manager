@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import date
 from dotenv import load_dotenv
-from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data
+from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data, reverse
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -41,6 +41,10 @@ def rote_sobra(data: ModeloRegistro, verify = Depends(api_door)):
 @app.post('/reset')
 def rote_reset(verify = Depends(api_door)):
     return reset()
+
+@app.post('/reverse')
+def reverse_value(verify = Depends(api_door)):
+    return reverse()
 
 
 

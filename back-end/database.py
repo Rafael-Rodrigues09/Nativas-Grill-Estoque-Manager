@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from datetime import date
 from fastapi.responses import FileResponse
 
+history = []
 def connect():
     load_dotenv()
     url = os.getenv('DATA_URL')
@@ -83,6 +84,7 @@ def add_usage(name, value):
         if not meat:
             return {'status': 'invalid'}
         meat.usage_kg += value
+        history.append([name, 'usage', value])
         session.commit()
         return {'status': 'success'}
               
@@ -92,6 +94,7 @@ def add_rest(name, value):
         if not meat:
             return {'status': 'invalid'}        
         meat.rest_kg += value
+        history.append([name, 'rest', value])
         session.commit()
         return {'status': 'success'}
             
@@ -111,7 +114,22 @@ def reset():
         )
         session.commit()
         return FileResponse(path='backup.txt', filename=f'Backup{date.today()}.txt', media_type='text/plain')
-    
+def reverse():
+    if not history:
+        return {'status': 'invalid'}
+
+    name, type_value, value = history.pop()
+    with SessionLocal() as session:
+        meat = session.scalars(select(Meats).where(Meats.name == name)).first()
+        if type_value == 'usage':
+            meat.usage_kg = meat.usage_kg - value
+        elif type_value == 'rest':
+            meat.rest_kg = meat.rest_kg - value
+        session.commit()
+        return {'status': 'sucess'}
+
+            
+
     
           
                
