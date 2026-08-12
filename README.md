@@ -37,7 +37,8 @@ O projeto utiliza o docker-compose para orquestração automática do banco de d
 2. Crie um arquivo .env na raiz do projeto contendo as seguintes variáveis:
 - API_TOKEN=sua_senha_segura_da_api
 - DATA_PASS=senha_do_banco_postgres
-- DATA_URL=postgresql+psycopg2://postgres:senha_do_banco_postgres@db:5432/postgres
+- DATA_URL=postgresql+psycopg2://postgres:${senha_do_banco_postgres}@db:5432/postgres
+- FRONT_PASS=sua-senha-front-end
 - API_URL=http://api:8000
 
 3. Execute no terminal o Docker compose e suba a infraestrutura:
