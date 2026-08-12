@@ -9,6 +9,20 @@ load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
 api_acess = {'x-token': API_TOKEN}
 API_URL = os.getenv('API_URL')
+FRONT_PASS = os.getenv('FRONT_PASS')
+
+if not 'logado' in st.session_state:
+    st.session_state['logado'] = False
+if st.session_state['logado'] == False:
+    digited_pass = st.text_input(label='Digite a senha do banco', type='password')
+    if st.button('Entrar'):
+        if digited_pass == FRONT_PASS:
+            st.session_state['logado'] = True
+            st.rerun()
+        else:
+            st.error('Senha incorreta')
+    st.stop()
+    
 try:
     response = requests.get(f'{API_URL}/estoque', headers=api_acess)
     if response.status_code == 200:
