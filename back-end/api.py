@@ -25,8 +25,9 @@ class ModeloRegistro(BaseModel):
 app = FastAPI()
 create_data()
 
-@app.get('/health')
+@app.api_route('/health', methods=['GET', 'HEAD'])
 def check_health(): return {'status': 'valid'}
+
 @app.get('/estoque')
 def rote_show_data(verify = Depends(api_door)):
     return get_data()
