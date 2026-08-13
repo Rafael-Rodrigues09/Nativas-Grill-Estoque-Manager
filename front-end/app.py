@@ -69,12 +69,22 @@ with colb2:
             st.rerun()
         else:
             st.error('Digite um valor maior que 0')
-with colb3:
-    def reset():
+
+@st.dialog('🚨 Tem certeza que deseja RESETAR o banco e salvar como PDF? 🚨')
+def warning():    
+    colw1, colw2 = st.columns(2)
+    with colw1:
+        if st.download_button(label='🚨SIM', data=reset, file_name=f'Backup-{date.today()}.pdf', mime='application/pdf'): st.rerun()
+    with colw2:
+        if st.button('NÃO'): st.rerun()
+
+def reset():
         response = requests.post(f'{API_URL}/reset', headers=api_acess)
         return response.content
-        st.rerun()
-    st.download_button(label='🚨Resetar turno e salvar', data=reset, file_name=f'Backup-{date.today()}.pdf', mime='application/pdf')
+with colb3:
+    if st.button('🚨 RESETAR E SALVAR'):
+        warning()
+        
 with colb4:
     if st.button('⟳ Reverter valor'):
         response = requests.post(f'{API_URL}/reverse', headers=api_acess)
