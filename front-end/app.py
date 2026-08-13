@@ -74,7 +74,7 @@ with colb3:
         response = requests.post(f'{API_URL}/reset', headers=api_acess)
         return response.content
         st.rerun()
-    st.download_button(label='🚨Resetar turno e salvar', data=reset, file_name=f'Backup-{date.today()}.txt', mime='text/plain')
+    st.download_button(label='🚨Resetar turno e salvar', data=reset, file_name=f'Backup-{date.today()}.pdf', mime='application/pdf')
 with colb4:
     if st.button('⟳ Reverter valor'):
         response = requests.post(f'{API_URL}/reverse', headers=api_acess)

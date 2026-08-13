@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from datetime import date
 from fastapi.responses import FileResponse
-
+from fpdf import FPDF
 history = []
 def connect():
     load_dotenv()
@@ -102,10 +102,16 @@ def reset():
     with SessionLocal() as session:
         query_values = select(Meats.name, Meats.usage_kg, Meats.rest_kg)
         values = session.execute(query_values).all()
-        with open(f'backup.txt', 'w', encoding='UTF-8') as backup:
-            for meat, usage, rest in values:
-                if usage != 0.0 or rest != 0.0:
-                    backup.write(f'{meat}: usado_kg {usage} --- sobra_kg {rest}\n')
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', size=16)
+        pdf.cell(0, 3, txt='Relatório Nativas Grill Estoque Carnes', ln=1, align='C')
+        pdf.ln(10)
+        pdf.set_font('Arial', '', 10)  
+        for meat, usage, rest in values:
+            if usage != 0.0 or rest != 0.0:
+                pdf.cell(0, 7, txt=f"{meat}: USADO: {usage} | SOBRA: {rest}", ln=1, align='L')
+        pdf.output('backup.pdf')
         session.execute(
             update(Meats).values(
                 usage_kg=0.0,
@@ -113,7 +119,7 @@ def reset():
             )
         )
         session.commit()
-        return FileResponse(path='backup.txt', filename=f'Backup{date.today()}.txt', media_type='text/plain')
+        return FileResponse(path='backup.pdf', filename=f'Backup{date.today()}.pdf', media_type='application/pdf')
 def reverse():
     if not history:
         return {'status': 'invalid'}
