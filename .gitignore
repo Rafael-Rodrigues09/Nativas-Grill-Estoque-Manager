@@ -3,4 +3,3 @@ __pycache__
 backup.txt
 .env
 .vscode
-.devcontainer
