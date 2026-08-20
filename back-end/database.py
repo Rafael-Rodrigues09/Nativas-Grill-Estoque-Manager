@@ -1,11 +1,10 @@
-from sqlalchemy import create_engine, String, Float, Integer, Column, select, update
+from sqlalchemy import create_engine, String, Float, Integer, Column, select, update, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, timezone, datetime
 from fastapi.responses import FileResponse
 from fpdf import FPDF
-history = []
 def connect():
     load_dotenv()
     url = os.getenv('DATA_URL')
@@ -21,6 +20,14 @@ class Meats(Base):
     name = Column(String(40))
     usage_kg = Column(Float)
     rest_kg = Column(Float)
+
+class History(Base):
+    __tablename__ = 'history'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(40))
+    type = Column(String)
+    value = Column(Float)
+    date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 def create_data():
     meats_list = [
