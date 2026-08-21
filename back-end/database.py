@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, String, Float, Integer, Column, select, update, DateTime
+from sqlalchemy import create_engine, String, Float, Integer, Column, select, update, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
@@ -27,6 +27,7 @@ class History(Base):
     name = Column(String(40))
     type = Column(String)
     value = Column(Float)
+    is_reversed = Column(Boolean, default=False)
     date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 def create_data():
@@ -84,6 +85,11 @@ def get_data():
         query = select(Meats)
         results = session.scalars(query).all()      
         return {result.name: {'usage_kg': result.usage_kg, 'rest_kg': result.rest_kg} for result in results }
+    
+def get_history():
+    with SessionLocal() as session:
+        results = session.scalars(select(History)).all()
+        return [{'name': meat.name, 'value': meat.value, 'type': meat.type, 'date': meat.date} for meat in results]
 
 def add_usage(name, value):
     with SessionLocal() as session:
@@ -91,7 +97,7 @@ def add_usage(name, value):
         if not meat:
             return {'status': 'invalid'}
         meat.usage_kg += value
-        history.append([name, 'usage', value])
+        session.add(History(name=name, type='usage', value=value))
         session.commit()
         return {'status': 'success'}
               
@@ -101,7 +107,7 @@ def add_rest(name, value):
         if not meat:
             return {'status': 'invalid'}        
         meat.rest_kg += value
-        history.append([name, 'rest', value])
+        session.add(History(name=name, type='rest', value=value))
         session.commit()
         return {'status': 'success'}
             
@@ -128,18 +134,18 @@ def reset():
         session.commit()
         return FileResponse(path='backup.pdf', filename=f'Backup{date.today()}.pdf', media_type='application/pdf')
 def reverse():
-    if not history:
-        return {'status': 'invalid'}
-
-    name, type_value, value = history.pop()
     with SessionLocal() as session:
-        meat = session.scalars(select(Meats).where(Meats.name == name)).first()
-        if type_value == 'usage':
-            meat.usage_kg = meat.usage_kg - value
-        elif type_value == 'rest':
-            meat.rest_kg = meat.rest_kg - value
-        session.commit()
-        return {'status': 'sucess'}
+        last = session.scalars(select(History).where(History.is_reversed == False).order_by(History.id.desc())).first()
+        if last:
+            meat = session.scalars(select(Meats).where(Meats.name == last.name)).first()
+            if last.type == 'usage':
+                meat.usage_kg = meat.usage_kg - last.value
+            elif last.type == 'rest':
+                meat.rest_kg = meat.rest_kg - last.value
+            last.is_reversed = True
+            session.commit()
+            return {'status': 'success', 'date': last.date}
+        return {'status': 'invalid'}
 
             
 

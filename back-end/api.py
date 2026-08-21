@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import date
 from dotenv import load_dotenv
-from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data, reverse
+from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data, reverse, get_history
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -31,6 +31,10 @@ def check_health(): return {'status': 'valid'}
 @app.get('/estoque')
 def rote_show_data(verify = Depends(api_door)):
     return get_data()
+
+@app.get('/historico')
+def rote_show_history():
+    return get_history()
 
 @app.post('/uso')
 def rote_uso(data: ModeloRegistro, verify = Depends(api_door)):
