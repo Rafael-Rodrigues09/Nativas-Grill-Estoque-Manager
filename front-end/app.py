@@ -41,8 +41,8 @@ for meat, value in data.items():
     if value['usage_kg'] > 0 or value['rest_kg'] > 0:
         usage_meats.append({
             'Carne': meat,
-            'Usado': f'{value["usage_kg"]:.2f}',
-            'Sobra': f'{value["rest_kg"]:.2f}'
+            'Usado': f'{value["usage_kg"]:.3f}',
+            'Sobra': f'{value["rest_kg"]:.3f}'
         })
 if len(usage_meats) > 0:
     st.table(usage_meats)
@@ -50,7 +50,7 @@ else:
     st.write('Nenhuma carne adicionada')
 
 meat_name = st.selectbox('Selecione a carne:', list(data.keys()), key='select_meat')
-value = st.number_input('Quatidade usada(kg):', min_value= 0.0, step= 0.01, format='%.2f')
+value = st.number_input('Quatidade usada(kg):', min_value= 0.0, step= 0.01, format='%.3f')
 colb1, colb2, colb3, colb4 = st.columns(4)
 
 with colb1:

@@ -123,7 +123,7 @@ def reset():
         pdf.set_font('Arial', '', 10)  
         for meat, usage, rest in values:
             if usage != 0.0 or rest != 0.0:
-                pdf.cell(0, 7, txt=f"{meat}: USADO: {usage} | SOBRA: {rest}", ln=1, align='L')
+                pdf.cell(0, 7, txt=f"{meat}: USADO: {usage:.3f} | SOBRA: {rest:.3f}", ln=1, align='L')
         pdf.output('backup.pdf')
         session.execute(
             update(Meats).values(
