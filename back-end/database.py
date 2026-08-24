@@ -89,7 +89,7 @@ def get_data():
 def get_history():
     with SessionLocal() as session:
         results = session.scalars(select(History)).all()
-        return [{'name': meat.name, 'value': meat.value, 'type': meat.type, 'date': meat.date} for meat in results]
+        return [{'name': meat.name, 'value': meat.value, 'type': meat.type, 'date': meat.date, 'revertido': meat.is_reversed} for meat in results]
 
 def add_usage(name, value):
     with SessionLocal() as session:
@@ -97,7 +97,7 @@ def add_usage(name, value):
         if not meat:
             return {'status': 'invalid'}
         meat.usage_kg += value
-        session.add(History(name=name, type='usage', value=value))
+        session.add(History(name=name, type='usado', value=value))
         session.commit()
         return {'status': 'success'}
               
@@ -107,7 +107,7 @@ def add_rest(name, value):
         if not meat:
             return {'status': 'invalid'}        
         meat.rest_kg += value
-        session.add(History(name=name, type='rest', value=value))
+        session.add(History(name=name, type='sobra', value=value))
         session.commit()
         return {'status': 'success'}
             
@@ -138,9 +138,9 @@ def reverse():
         last = session.scalars(select(History).where(History.is_reversed == False).order_by(History.id.desc())).first()
         if last:
             meat = session.scalars(select(Meats).where(Meats.name == last.name)).first()
-            if last.type == 'usage':
+            if last.type == 'usado':
                 meat.usage_kg = meat.usage_kg - last.value
-            elif last.type == 'rest':
+            elif last.type == 'sobra':
                 meat.rest_kg = meat.rest_kg - last.value
             last.is_reversed = True
             session.commit()
