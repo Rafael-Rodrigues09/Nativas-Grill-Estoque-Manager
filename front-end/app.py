@@ -115,15 +115,17 @@ def screen_history_tab():
         st.stop()        
         
     st.title('Histórico de carnes')
-    df = pd.DataFrame(data)
-    df['date'] = pd.to_datetime(df['date'], utc=True).dt.tz_convert('America/Cuiaba').dt.strftime('%d/%m/%Y | %H: %M')
-    st.dataframe(df)
-
+    if data:
+        df = pd.DataFrame(data)
+        df['date'] = pd.to_datetime(df['date'], utc=True).dt.tz_convert('America/Cuiaba').dt.strftime('%d/%m/%Y | %H: %M')
+        st.dataframe(df)
+        
+    else:
+        st.info('Nada no estoque no momento')
+        
     if st.button('sair'):
         st.session_state['logged'] = False
-        st.rerun()
-    
-
+        st.rerun()        
 if st.session_state['screen'] == 'add_tab':
     screen_add_meats()
 
