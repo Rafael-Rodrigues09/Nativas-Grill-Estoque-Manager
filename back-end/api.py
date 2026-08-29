@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import date
 from dotenv import load_dotenv
-from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data, reverse, get_history
+from database import connect, Meats, create_data, add_usage, add_rest, reset, get_data, reverse, get_history, add_lot, get_lot
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -22,6 +22,11 @@ class ModeloRegistro(BaseModel):
     name: str
     value: float
 
+class ModeloLot(BaseModel):
+    name: str
+    value: float
+    expiration_date: date
+
 app = FastAPI()
 create_data()
 
@@ -35,6 +40,13 @@ def rote_show_data(verify = Depends(api_door)):
 @app.get('/historico')
 def rote_show_history():
     return get_history()
+
+@app.get('/allestoque')
+def rote_show_lot(verift = Depends(api_door)):
+    return get_lot()
+@app.post('/add-estoque')
+def rote_add_lot(data: ModeloLot, verify = Depends(api_door)):
+    return add_lot(name=data.name, value=data.value, expiration_date=data.expiration_date)
 
 @app.post('/uso')
 def rote_uso(data: ModeloRegistro, verify = Depends(api_door)):

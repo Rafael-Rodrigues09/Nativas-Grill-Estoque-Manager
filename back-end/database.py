@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, String, Float, Integer, Column, select, update, DateTime, Boolean
+from sqlalchemy import create_engine, String, Float, Integer, Column, select, update, DateTime, Date, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
@@ -29,6 +29,16 @@ class History(Base):
     value = Column(Float)
     is_reversed = Column(Boolean, default=False)
     date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class Lot(Base):
+    __tablename__ = 'lot'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(40))
+    initial_kg = Column(Float)
+    current_kg = Column(Float)
+    expiration_date = Column(Date)
+    entry_date = Column(DateTime(timezone=True), default= lambda: datetime.now(timezone.utc))
+    is_active = Column(Boolean, default=True)
 
 def create_data():
     meats_list = [
@@ -82,15 +92,33 @@ def create_data():
 
 def get_data():
     with SessionLocal() as session:
-        query = select(Meats)
-        results = session.scalars(query).all()      
-        return {result.name: {'usage_kg': result.usage_kg, 'rest_kg': result.rest_kg} for result in results }
-    
+        results = session.scalars(select(Meats)).all()      
+        return {result.name: {'usage_kg': result.usage_kg, 'rest_kg': result.rest_kg} for result in results}
+def get_lot():
+    with SessionLocal() as session:
+        results = session.scalars(select(Lot).order_by(Lot.expiration_date.asc())).all()
+        return [
+            {'name': result.name,
+            'initial_kg': result.initial_kg, 
+            'current_kg': result.current_kg, 
+            'entry_date': result.entry_date, 
+            'expiration_date': result.expiration_date, 
+            'is_active': result.is_active
+            } 
+            for result in results
+
+            ]
 def get_history():
     with SessionLocal() as session:
         results = session.scalars(select(History)).all()
         return [{'name': meat.name, 'value': meat.value, 'type': meat.type, 'date': meat.date, 'revertido': meat.is_reversed} for meat in results]
 
+def add_lot(name, value, expiration_date):
+    if value <= 0: return {'status': 'invalid'}
+    with SessionLocal() as session:
+        session.add(Lot(name=name, initial_kg=value, current_kg=value, expiration_date=expiration_date))
+        session.commit()
+        return {'status': 'sucess'}
 def add_usage(name, value):
     with SessionLocal() as session:
         meat = session.scalars(select(Meats).where(Meats.name == name)).first()
