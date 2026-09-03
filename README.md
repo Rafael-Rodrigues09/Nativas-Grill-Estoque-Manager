@@ -1,10 +1,13 @@
 # - Sistema de Gestão de Estoque Perecíveis
 
 ## Links de Produção:
-- Front-end (Interface): https://nativas-grill-estoque-manager-2ll7.onrender.com
-- Back-end (API Docs): https://nativas-grill-estoque-manager.onrender.com
+- Front-end (Interface): https://meat-estoque-manager-nativas.streamlit.app/
+- Back-end (API Docs): https://nativas-grill-estoque-manager.onrender.com/docs
 
-⚠️ **Aviso** (Cold Start): Este projeto está hospedado no plano gratuito do Render. Por padrão, os contêineres entram em hibernação após 15 minutos de inatividade. O primeiro acesso pode levar cerca de **50 segundos** para acordar a API e o Banco de Dados. Abrir o link da API primeiro, aguardar o carregamento e, em seguida, acessar o Front-end para evitar erros.
+A interface do Streamlit implementa controle de visualização por perfil (RBAC). Para testar os diferentes fluxos na aplicação online, utilize as credenciais abaixo:
+
+- Perfil Operador (Lançamentos rápidos de pesagem e reversão imediata): [INSIRA A USER_PASS DO .ENV]
+- Perfil Administrador (Acesso ao histórico de auditoria, indicadores de reversão e relatórios): [INSIRA A ADMIN_PASS DO .ENV]
 
 ## Contexto Operacional (O Problema)
 O controle de estoque no setor de perecíveis (carnes) em ambientes de alta demanda (churrascarias) é tradicionalmente feito de forma manual em papel. Esse método gera perda de histórico, inconsistência de dados e falhas de auditoria. 
@@ -24,7 +27,8 @@ A aplicação foi arquitetada sob o modelo de Microserviços Desacoplados, separ
 ## Regras de Negócio e Segurança
 - Isolamento de Estado: O front-end não possui conexão com o banco de dados. Toda requisição passa obrigatoriamente pela API.
 - Segurança de Rotas: As rotas de mutação (POST/UPDATE) são protegidas por autenticação via Headers (x-token), validados através de variáveis de ambiente (.env).
-- Rotina EOD (End of Day): O sistema possui um gatilho de fechamento de turno que realiza o dump do banco, gera um arquivo de backup sanitizado em .txt com timestamp e reseta a tabela para o turno seguinte.
+- Auditoria Imutável (Soft Rollback): A reversão de operações (/reverse) utiliza controle transacional LIFO sem deleção física no PostgreSQL. O registro original é mantido com a flag is_reversed = True, preservando 100% do histórico contábil para auditoria.
+- Rotina EOD (End of Day): O sistema possui um gatilho de fechamento de turno que realiza o dump do banco, gera um arquivo de backup sanitizado em .pdf com timestamp e reseta a tabela para o turno seguinte.
 
 ## Como rodar localmente (Dev Environment)
 
@@ -37,7 +41,7 @@ O projeto utiliza o docker-compose para orquestração automática do banco de d
 2. Crie um arquivo .env na raiz do projeto contendo as seguintes variáveis:
 - API_TOKEN=sua_senha_segura_da_api
 - DATA_PASS=senha_do_banco_postgres
-- DATA_URL=postgresql+psycopg2://postgres:${senha_do_banco_postgres}@db:5432/postgres
+- DATA_URL=postgresql+psycopg2://postgres:${DATA_PASS}@db:5432/postgres
 - USER_PASS=sua-senha-front-end
 - ADMIN_PASS=sua-senha-historico
 - API_URL=http://api:8000
